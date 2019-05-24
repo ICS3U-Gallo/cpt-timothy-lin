@@ -1,2 +1,2 @@
-# cpt-timothy-lin
+# pacman
 cpt-timothy-lin created by GitHub Classroom

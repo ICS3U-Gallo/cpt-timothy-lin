@@ -65,10 +65,7 @@ def on_draw():
                 arcade.draw_lrtb_rectangle_filled(x, x + 20, y - 15, y - 35, arcade.color.BLACK)
             elif element == "=":
                 arcade.draw_lrtb_rectangle_filled(x, x + 20, y - 15, y - 35, arcade.color.WHITE)
-
-            elif element == "S":
-                print(x, y)
-
+                
             x += 20
         y -= 20
 

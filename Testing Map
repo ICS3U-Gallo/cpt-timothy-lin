@@ -1,0 +1,111 @@
+import arcade
+
+WIDTH = 560
+HEIGHT = 620
+TITLE = "Pacman"
+
+MOVEMENT_SPEED = 10
+
+MAP_WIDTH = 28 * 20
+MAP_HEIGHT = 32 * 20
+map = [
+        "%%%%%%%%%%%%%%%%%%%%%%%%%%%%",
+        "%............%%............%",
+        "%.%%%%.%%%%%.%%.%%%%%.%%%%.%",
+        "%.%%%%.%%%%%.%%.%%%%%.%%%%.%",
+        "%.%%%%.%%%%%.%%.%%%%%.%%%%.%",
+        "%..........................%",
+        "%.%%%%.%%.%%%%%%%%.%%.%%%%.%",
+        "%.%%%%.%%.%%%%%%%%.%%.%%%%.%",
+        "%......%%....%%....%%......%",
+        "%%%%%%.%%%%%-%%-%%%%%.%%%%%%",
+        "-----%.%%%%%-%%-%%%%%.%-----",
+        "-----%.%%----------%%.%-----",
+        "-----%.%%-%%%==%%%-%%.%-----",
+        "%%%%%%.%%-%G----G%-%%.%%%%%%",
+        "------.---%------%---.------",
+        "%%%%%%.%%-%G----G%-%%.%%%%%%",
+        "-----%.%%-%%%%%%%%-%%.%-----",
+        "-----%.%%----------%%.%-----",
+        "-----%.%%-%%%%%%%%-%%.%-----",
+        "%%%%%%.%%-%%%%%%%%-%%.%%%%%%",
+        "%............%%............%",
+        "%.%%%%.%%%%%.%%.%%%%%.%%%%.%",
+        "%.%%%%.%%%%%.%%.%%%%%.%%%%.%",
+        "%...%%.......--.......%%...%",
+        "%%%.%%.%%.%%%%%%%%.%%.%%.%%%",
+        "%%%.%%.%%.%%%%%%%%.%%.%%.%%%",
+        "%......%%....%%....%%......%",
+        "%.%%%%%%%%%%.%%.%%%%%%%%%%.%",
+        "%.%%%%%%%%%%.%%.%%%%%%%%%%.%",
+        "%..........................%",
+        "%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+    ]
+food_list = arcade.SpriteList()
+brick_list = arcade.SpriteList()
+player = arcade.Sprite("images/pacman.png", center_x = 280,center_y = 155, scale = 0.008)
+
+def update(delta_time):
+    food_list.update()
+    brick_list.update()
+    player.update()
+
+def on_draw():
+    global MAP_HEIGHT
+
+    arcade.start_render()
+
+    y = MAP_HEIGHT
+
+    for row in map:
+        x = 0
+        for element in row:
+
+            if element == "." or element == "-" or element == "G":
+                arcade.draw_lrtb_rectangle_filled(x, x + 20, y - 15, y - 35, arcade.color.BLACK)
+            elif element == "=":
+                arcade.draw_lrtb_rectangle_filled(x, x + 20, y - 15, y - 35, arcade.color.WHITE)
+
+            elif element == "S":
+                print(x, y)
+
+            x += 20
+        y -= 20
+
+        food_list.draw()
+        brick_list.draw()
+        player.draw()
+
+def setup():
+    arcade.open_window(WIDTH, HEIGHT, "My Drawing")
+    arcade.set_background_color(arcade.color.BLUE)
+
+    #player = arcade.Sprite("images/pacman.png", center_x = 270,center_y = 180, scale = 0.01)
+
+    y = MAP_HEIGHT
+
+    for row in map:
+        x = 0
+        for element in row:
+            if element == "%":
+                brick = arcade.Sprite("images/blue.png", center_x = x + 10, center_y = y - 25, scale = 0.01)
+                brick_list.append(brick)
+
+            elif element == ".":
+                food = arcade.Sprite("images/food.png", center_x = x + 10, center_y = y - 25, scale = 0.03)
+                food_list.append(food)
+
+            x += 20
+        y -= 20
+
+    arcade.schedule(update, 1/60)
+
+    # Override arcade window methods
+    window = arcade.get_window()
+    window.on_draw = on_draw
+    #window.on_key_press = on_key_press
+    #window.on_key_release = on_key_release
+    arcade.run()
+
+if __name__ == '__main__':
+    setup()

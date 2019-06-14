@@ -206,6 +206,10 @@ class Map(arcade.Window):
                 if self.player.center_y < 335 and self.player.center_y > 325:
                     self.player.center_x, self.player.center_y = 10, 330
 
+        if self.end_game:
+            self.ghost.change_x = 0
+            self.ghost.change_y = 0
+
     def move_player(self):
         if self.player.direction == "U":
             self.player.angle = 90
@@ -249,11 +253,12 @@ class Map(arcade.Window):
             elif key == arcade.key.RIGHT:
                 self.player.flag = "R"
 
+
 class Player(arcade.Sprite):
-    def __init__(self, filename="images/pacman.png", scale=0.1):
+    def __init__(self, filename="images/pacman.png", scale=0.09):
         super().__init__(filename=filename, scale=scale)
-        self.collision_check = arcade.Sprite(filename="images/pacman.png", scale=0.11)
-        self.front_collision = arcade.Sprite(filename="images/pacman.png", scale=0.1)
+        self.collision_check = arcade.Sprite(filename="images/pacman.png", scale=0.1)
+        self.front_collision = arcade.Sprite(filename="images/pacman.png", scale=0.09)
         self.flag = ""
         self.direction = ""
         self.score = 0
@@ -269,243 +274,91 @@ class Player(arcade.Sprite):
             else:
                 self.mouth_open = True
 
+
 class Ghost(arcade.Sprite):
-    def __init__(self, filename="images/ghost.png", scale=0.03):
+    def __init__(self, filename="images/ghost.png", scale=0.09):
         super().__init__(filename=filename, scale=scale)
 
-        self.up_collision = arcade.Sprite(filename="images/ghost.png", scale=0.03)
-        self.left_collision = arcade.Sprite(filename="images/ghost.png", scale=0.03)
-        self.right_collision = arcade.Sprite(filename="images/ghost.png", scale=0.03)
-        self.down_collision = arcade.Sprite(filename="images/ghost.png", scale=0.03)
+        self.up_collision = arcade.Sprite(filename="images/ghost.png", scale=0.092)
+        self.left_collision = arcade.Sprite(filename="images/ghost.png", scale=0.092)
+        self.right_collision = arcade.Sprite(filename="images/ghost.png", scale=0.092)
+        self.down_collision = arcade.Sprite(filename="images/ghost.png", scale=0.092)
         self.collision_list = arcade.SpriteList()
         self.collision_list.append(self.up_collision)
         self.collision_list.append(self.left_collision)
         self.collision_list.append(self.down_collision)
         self.collision_list.append(self.right_collision)
         self.available_direction = ["U", "L", "D", "R"]  # 0, 1, 2, 3
+        self.direction = ""
+        self.flag = ""
 
         start_direction = random.randint(0, 1)
         if start_direction == 0:
-            self.flag = 1
+            self.direction = "L"
         else:
-            self.flag = 3
+            self.direction = "R"
 
         self.preferred_direction = ["", ""]
         self.player_distance_x = 0
         self.player_distance_y = 0
 
     def next_step(self, brick_list, player):
-        pass
-        """
-        if self.flag == "":
-            clear = True
-            while clear:
-                index = random.randint(0, 3)
-                if index == 0:
-                    if len(arcade.check_for_collision_with_list(self.collision_list[index], brick_list)) == 0:
-                        self.flag = self.available_direction[index]
-                        clear = False
-                elif index == 1:
-                    if len(arcade.check_for_collision_with_list(self.collision_list[index], brick_list)) == 0:
-                        self.flag = self.available_direction[index]
-                        clear = False
-                elif index == 2:
-                    if len(arcade.check_for_collision_with_list(self.collision_list[index], brick_list)) == 0:
-                        self.flag = self.available_direction[index]
-                        clear = False
-                elif index == 3:
-                    if len(arcade.check_for_collision_with_list(self.collision_list[index], brick_list)) == 0:
-                        self.flag = self.available_direction[index]
-                        clear = False
-        
+
+        self.up_collision.center_y = self.center_y + 2
+        self.up_collision.center_x = self.center_x
+        self.left_collision.center_y = self.center_y
+        self.left_collision.center_x = self.center_x - 2
+        self.right_collision.center_y = self.center_y
+        self.right_collision.center_x = self.center_x + 2
+        self.down_collision.center_y = self.center_y - 2
+        self.down_collision.center_x = self.center_x
+
+        if self.direction != "":
+            index = self.available_direction.index(self.direction)
+            if len(arcade.check_for_collision_with_list(self.collision_list[index], brick_list)) != 0:
+                self.change_x = 0
+                self.change_y = 0
+                self.direction = ""
+                self.flag = ""
+
+        if self.flag == "" or self.direction == "":
+            index = random.randint(0, 3)
+            if index == 0:
+                 self.flag = self.available_direction[index]
+            elif index == 1:
+                self.flag = self.available_direction[index]
+            elif index == 2:
+                self.flag = self.available_direction[index]
+            elif index == 3:
+                self.flag = self.available_direction[index]
+
         if self.flag == "U":
-            collision = self.collision_list[self.direction]
-            if len(arcade.check_for_collision_with_list(collision, brick_list)) == 0:
-                self.direction = 0
-                #self.index = 0
+            if len(arcade.check_for_collision_with_list(self.up_collision, brick_list)) == 0:
+                self.direction = "U"
                 self.flag = ""
         elif self.flag == "D":
-            collision = self.collision_list[self.index]
-            if len(arcade.check_for_collision_with_list(collision, brick_list)) == 0:
-                self.direction = 2
-                #self.index = 2
+            if len(arcade.check_for_collision_with_list(self.down_collision, brick_list)) == 0:
+                self.direction = "D"
                 self.flag = ""
         elif self.flag == "L":
-            collision = self.collision_list[self.index]
-            if len(arcade.check_for_collision_with_list(collision, brick_list)) == 0:
-                self.direction = 1
-                #self.index = 1
+            if len(arcade.check_for_collision_with_list(self.left_collision, brick_list)) == 0:
+                self.direction = "L"
                 self.flag = ""
         elif self.flag == "R":
-            collision = self.collision_list.get[self.index]
-            if len(arcade.check_for_collision_with_list(self.front_collision_check, brick_list)) == 0:
-                self.direction = 3
-                #self.index = 3
+            if len(arcade.check_for_collision_with_list(self.right_collision, brick_list)) == 0:
+                self.direction = "R"
                 self.flag = ""
 
-
-        if self.direction == 0:
-            self.up_collision.center_y = self.center_y + 2
-            self.up_collision.center_x = self.center_x
-            self.left_collision.center_y = self.center_y
-            self.left_collision.center_x = self.center_x - 2
-            self.right_collision.center_y = self.center_y
-            self.right_collision.center_x = self.center_x + 2
-            self.down_collision.center_y = self.center_y - 2
-            self.down_collision.center_x = self.center_x
-
-        elif self.direction == 2:
-            self.up_collision.center_y = self.center_y - 2
-            self.up_collision.center_x = self.center_x
-            self.left_collision.center_y = self.center_y
-            self.left_collision.center_x = self.center_x - 2
-            self.right_collision.center_y = self.center_y
-            self.right_collision.center_x = self.center_x + 2
-            self.down_collision.center_y = self.center_y + 2
-            self.down_collision.center_x = self.center_x
-
-        elif self.direction == 1:
-            self.up_collision.center_x = self.center_x - 2
-            self.up_collision.center_y = self.center_y
-            self.left_collision.center_y = self.center_y - 2
-            self.left_collision.center_x = self.center_x
-            self.right_collision.center_y = self.center_y + 2
-            self.right_collision.center_x = self.center_x
-            self.down_collision.center_y = self.center_y
-            self.down_collision.center_x = self.center_x + 2
-
-        elif self.direction == 3:
-            self.up_collision.center_x = self.center_x + 2
-            self.up_collision.center_y = self.center_y
-            self.left_collision.center_y = self.center_y - 2
-            self.left_collision.center_x = self.center_x
-            self.right_collision.center_y = self.center_y + 2
-            self.right_collision.center_x = self.center_x
-            self.down_collision.center_y = self.center_y
-            self.down_collision.center_x = self.center_x - 2
-
-        if len(arcade.check_for_collision_with_list(self.collision_list[self.direction], brick_list)) != 0:
-            self.change_x = 0
-            self.change_y = 0
-            self.direction = 4
-            self.flag = ""
-
-        
         self.move()
 
-        
-        if self.change_x == 0 and self.change_y == 0:
-            self.get_direction(player)
-            self.check_collision(brick_list)
-
-            direction = self.available_direction[random.randint(0, len(self.available_direction)-1)]
-            if direction == "U":
-                self.direction = "U"
-            elif direction == "D":
-                self.direction = "D"
-            elif direction == "R":
-                self.direction = "R"
-            elif direction == "L":
-                self.direction = "L"
-
-
-
-            if self.preferred_direction[0] == "R":
-                if self.move_right:
+        if self.center_x > 0 and self.center_x < 10:
+            if self.center_y < 335 and self.center_y > 325:
+                if self.direction == "L":
                     self.direction = "R"
-                elif self.preferred_direction[1] == "U":
-                    if self.move_up:
-                        self.flag = "U"
-                    elif self.move_down:
-                        self.flag = "D"
-                    elif self.move_left:
-                        self.flag = "L"
-                elif self.preferred_direction[1] == "D":
-                    if self.move_down:
-                        self.flag = "D"
-                    elif self.move_up:
-                        self.flag = "U"
-                    elif self.move_left:
-                        self.flag = "L"
-
-            elif self.preferred_direction[0] == "L":
-                if self.move_left:
-                    self.flag = "L"
-                elif self.preferred_direction[1] == "U":
-                    if self.move_up:
-                        self.flag = "U"
-                    elif self.move_down:
-                        self.flag = "D"
-                    elif self.move_right:
-                        self.flag = "R"
-                elif self.preferred_direction[1] == "D":
-                    if self.move_down:
-                        self.flag = "D"
-                    elif self.move_up:
-                        self.flag = "U"
-                    elif self.move_right:
-                        self.flag = "R"
-
-            if self.flag == "R":
-                self.direction = "R"
-            elif self.flag == "L":
-                self.direction = "L"
-            elif self.flag == "U":
-                self.direction = "U"
-            elif self.flag == "D":
-                self.direction = "D"
-            
-
-    def get_direction(self, player):
-        self.player_distance_x = self.center_x - player.center_x
-        self.player_distance_y = self.center_y - player.center_y
-
-        if self.player_distance_x > 0:
-            self.preferred_direction[0] = "L"
-        elif self.player_distance_x < 0:
-            self.preferred_direction[0] = "R"
-
-        if self.player_distance_y > 0:
-            self.preferred_direction[1] = "D"
-        elif self.player_distance_y < 0:
-            self.preferred_direction[1] = "U"
-
-    
-    def check_collision(self, brick_list):
-        #R
-        self.collision_check.center_x = self.center_x + 2
-        self.collision_check.center_y = self.center_y
-        if len(arcade.check_for_collision_with_list(self.collision_check, brick_list)) == 0:
-            if not self.available_direction.__contains__("R"):
-                self.available_direction.append("R")
-        else:
-            if self.available_direction.__contains__("R"):
-                self.available_direction.remove("R")
-        #L
-        self.collision_check.center_x = self.center_x - 2
-        if len(arcade.check_for_collision_with_list(self.collision_check, brick_list)) == 0:
-            if not self.available_direction.__contains__("L"):
-                self.available_direction.append("L")
-        else:
-            if self.available_direction.__contains__("L"):
-                self.available_direction.remove("L")
-        #U
-        self.collision_check.center_y = self.center_y + 2
-        self.collision_check.center_x = self.center_x
-        if len(arcade.check_for_collision_with_list(self.collision_check, brick_list)) == 0:
-            if not self.available_direction.__contains__("U"):
-                self.available_direction.append("U")
-            else:
-                if self.available_direction.__contains__("U"):
-                    self.available_direction.remove("U")
-        #D
-        self.collision_check.center_y = self.center_y - 2
-        if len(arcade.check_for_collision_with_list(self.collision_check, brick_list)) == 0:
-            if not self.available_direction.__contains__("D"):
-                self.available_direction.append("D")
-            else:
-                if self.available_direction.__contains__("D"):
-                    self.available_direction.remove("D")"""
+        elif self.center_x < 580 and self.center_x > 570:
+            if self.center_y < 335 and self.center_y > 325:
+                if self.direction == "R":
+                    self.direction = "L"
 
     def move(self):
         if self.direction == "U":
@@ -556,6 +409,80 @@ class Ghost(arcade.Sprite):
             self.down_collision.change_x = MOVEMENT_SPEED
             self.down_collision.change_y = 0
 
+        """
+        if self.change_x == 0 and self.change_y == 0:
+            self.get_direction(player)
+            self.check_collision(brick_list)
+
+            direction = self.available_direction[random.randint(0, len(self.available_direction)-1)]
+            if direction == "U":
+                self.direction = "U"
+            elif direction == "D":
+                self.direction = "D"
+            elif direction == "R":
+                self.direction = "R"
+            elif direction == "L":
+                self.direction = "L"
+
+            if self.preferred_direction[0] == "R":
+                if self.move_right:
+                    self.direction = "R"
+                elif self.preferred_direction[1] == "U":
+                    if self.move_up:
+                        self.flag = "U"
+                    elif self.move_down:
+                        self.flag = "D"
+                    elif self.move_left:
+                        self.flag = "L"
+                elif self.preferred_direction[1] == "D":
+                    if self.move_down:
+                        self.flag = "D"
+                    elif self.move_up:
+                        self.flag = "U"
+                    elif self.move_left:
+                        self.flag = "L"
+
+            elif self.preferred_direction[0] == "L":
+                if self.move_left:
+                    self.flag = "L"
+                elif self.preferred_direction[1] == "U":
+                    if self.move_up:
+                        self.flag = "U"
+                    elif self.move_down:
+                        self.flag = "D"
+                    elif self.move_right:
+                        self.flag = "R"
+                elif self.preferred_direction[1] == "D":
+                    if self.move_down:
+                        self.flag = "D"
+                    elif self.move_up:
+                        self.flag = "U"
+                    elif self.move_right:
+                        self.flag = "R"
+
+            if self.flag == "R":
+                self.direction = "R"
+            elif self.flag == "L":
+                self.direction = "L"
+            elif self.flag == "U":
+                self.direction = "U"
+            elif self.flag == "D":
+                self.direction = "D"
+"""
+
+    def get_direction(self, player):
+        self.player_distance_x = self.center_x - player.center_x
+        self.player_distance_y = self.center_y - player.center_y
+
+        if self.player_distance_x > 0:
+            self.preferred_direction[0] = "L"
+        elif self.player_distance_x < 0:
+            self.preferred_direction[0] = "R"
+
+        if self.player_distance_y > 0:
+            self.preferred_direction[1] = "D"
+        elif self.player_distance_y < 0:
+            self.preferred_direction[1] = "U"
 
 class MyGame():
     def __init__(self):

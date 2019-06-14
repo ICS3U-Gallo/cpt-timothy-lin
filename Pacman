@@ -58,6 +58,7 @@ class Map(arcade.Window):
         self.end_game = False
         self.start_game = False
         self.pause = False
+        self.display_instructions = False
 
         self.setup()
         self.tests()
@@ -95,6 +96,9 @@ class Map(arcade.Window):
 
         self.brick_list.draw()
         self.food_list.draw()
+        self.ghost.draw()
+
+        arcade.draw_text(f"SCORE: {self.player.score}", 585, 595, arcade.color.WHITE, 15, 1, font_name='GARA')
 
         if not self.start_game: #display before game starts
             arcade.draw_text(f"PAC-MAN", 260, 340, arcade.color.WHITE, 10, 100, font_name='GARA')
@@ -105,28 +109,42 @@ class Map(arcade.Window):
         if self.end_game: #display when game ends
             arcade.draw_text(f"GAME OVER! SCORE: {self.player.score}", 250, 335, arcade.color.WHITE, 10, 100, font_name='GARA')
 
-        if self.start_game: #open / close mouth
-            if self.player.mouth_open:
+        if self.start_game:
+            if self.player.mouth_open: #open / close mouth
                 self.player.draw()
             else:
                 arcade.draw_circle_filled(self.player.center_x, self.player.center_y, 8, arcade.color.YELLOW)
 
-        if self.pause:
-            self.player.change_y = 0
-            self.player.change_x = 0
-            self.ghost.change_y = 0
-            self.ghost.change_x = 0
-            arcade.draw_text("PAUSED", 265, 340, arcade.color.WHITE, 10, 100, font_name='GARA')
-            arcade.draw_text("PRESS 'P' TO CONTINUE", 223, 320, arcade.color.WHITE, 8, 150, font_name='GARA')
-            arcade.draw_circle_filled(self.player.center_x, self.player.center_y, 8, arcade.color.YELLOW)
+            if not self.pause:
+                arcade.draw_text("PRESS 'P' TO PAUSE GAME", 585, 510, arcade.color.WHITE, 10, 100, font_name='GARA')
 
-        self.ghost.draw()
+            elif self.pause:
+                arcade.draw_text("PAUSED", 265, 340, arcade.color.WHITE, 10, 100, font_name='GARA')
+                arcade.draw_text("PRESS 'P' TO CONTINUE", 223, 320, arcade.color.WHITE, 8, 150, font_name='GARA')
+                arcade.draw_circle_filled(self.player.center_x, self.player.center_y, 8, arcade.color.YELLOW)
 
-        arcade.draw_text(f"SCORE: {self.player.score}", 585, 595, arcade.color.WHITE, 15, 1, font_name='GARA')
+        if self.display_instructions:
+            arcade.draw_lrtb_rectangle_filled(50, WIDTH - 50, HEIGHT - 50, 50, arcade.color.GRAY)
+            arcade.draw_text("INSTRUCTIONS", 60, 540, arcade.color.WHITE, 15, 150, font_name='GARA')
+            arcade.draw_text("Press 'UP ARROW' to go UP", 60, 500, arcade.color.WHITE, 10, 300, font_name='GARA')
+            arcade.draw_text("Press 'DOWN ARROW' to go DOWN", 60, 460, arcade.color.WHITE, 10, 300, font_name='GARA')
+            arcade.draw_text("Press 'LEFT ARROW' to go LEFT", 60, 420, arcade.color.WHITE, 10, 300, font_name='GARA')
+            arcade.draw_text("Press 'RIGHT ARROW' to go RIGHT", 60, 380, arcade.color.WHITE, 10, 300, font_name='GARA')
+            arcade.draw_text("You are pac-man (Yellow character)! Avoid the red ghost and eat all pellets to win the game!", 60, 340, arcade.color.WHITE, 15, 500, font_name='GARA')
+            arcade.draw_text("Press 'I' to return", 500, 540, arcade.color.WHITE, 10, 300, font_name='GARA')
+
+        if not self.display_instructions:
+            arcade.draw_text("PRESS 'I' TO DISPLAY INSTRUCTIONS", 585, 450, arcade.color.WHITE, 10, 100,
+                             font_name='GARA')
 
     def update(self, delta_time):
-        self.tests()
         if self.start_game:
+            if self.pause or self.display_instructions:
+                self.player.change_y = 0
+                self.player.change_x = 0
+                self.ghost.change_y = 0
+                self.ghost.change_x = 0
+
             self.brick_list.update()
             self.food_list.update()
 
@@ -139,8 +157,6 @@ class Map(arcade.Window):
             self.player.check_collision(self.brick_list)
             self.player.check_flags(self.brick_list)
             self.player.move()
-
-            self.test_move()
 
             #set location change of ghost collision sprites
             self.ghost.center_x += self.ghost.change_x
@@ -170,6 +186,8 @@ class Map(arcade.Window):
                 self.player.direction = ""
                 self.player.change_x = 0
                 self.player.change_y = 0
+                self.ghost.change_x = 0
+                self.ghost.change_y = 0
 
             food_hit_list = arcade.check_for_collision_with_list(self.player, self.food_list)
             for food in food_hit_list:
@@ -188,7 +206,7 @@ class Map(arcade.Window):
         if key == arcade.key.ENTER:
             self.start_game = True
 
-        if self.start_game:
+        if self.start_game and not self.display_instructions:
             if key == arcade.key.UP:
                 self.player.flag = "U"
             elif key == arcade.key.DOWN:
@@ -203,48 +221,38 @@ class Map(arcade.Window):
             elif key == arcade.key.P and self.pause:
                 self.pause = False
 
+        if key == arcade.key.I and not self.display_instructions:
+            self.display_instructions = True
+        elif key == arcade.key.I and self.display_instructions:
+            self.display_instructions = False
+
     def tests(self):
-        assert self.player.direction == "" or self.player.direction == "U" or self.player.direction == "R" or self.player.direction == "L" or self.player.direction == "D"
-
-        no_movement_paused = True
-        if self.pause:
-            if self.player.change_y != 0 and self.player.change_x != 0 and self.ghost.change_y != 0 and self.ghost.change_x != 0:
-                no_movement_paused = False
-        assert no_movement_paused
-
-    def test_move(self):
-        pass
-""""
+        #test for player collision
         test_player = Player()
-        test_player.center_x = 55
-        test_player.center_y = 77
-        test_player.direction = "U"
-        test_player.update()
-        assert test_player.center_x == 330
-        assert test_player.center_y == 570 """
+        test_player.center_x = 335
+        test_player.center_y = 570
+        test_player.check_collision(self.brick_list)
+        assert test_player.change_x == 0
+        assert test_player.change_y == 0
+        assert test_player.direction == ""
+        #test for setting direction
+        test_player.center_x = 30
+        test_player.center_y = 550
+        test_player.flag = "U"
+        test_player.check_flags(self.brick_list)
+        assert test_player.direction == "U"
+        assert test_player.flag == ""
+        #test for ghost collision sprites location
+        test_ghost = Ghost()
+        test_ghost.center_x = 30
+        test_ghost.center_y = 550
+        test_ghost.setup_collision()
+        assert test_ghost.up_collision.center_x == 30
+        assert test_ghost.up_collision.center_y == 552
+        assert test_ghost.down_collision.center_y == 548
+        assert test_ghost.right_collision.center_x == 32
 
-"""
-        if self.player.direction == "U":
-            up_move = False
-            if self.player.change_y == MOVEMENT_SPEED and self.player.change_x == 0:
-                up_move = True
-            assert up_move
-        if self.player.direction == "D":
-            down_move = False
-            if self.player.change_y == -MOVEMENT_SPEED and self.player.change_x == 0:
-                down_move = True
-            assert down_move
-        if self.player.direction == "L":
-            left_move = False
-            if self.player.change_x == -MOVEMENT_SPEED and self.player.change_y == 0:
-                left_move = True
-            assert left_move
-        if self.player.direction == "R":
-            right_move = False
-            if self.player.change_x == MOVEMENT_SPEED and self.player.change_y == 0:
-                right_move = True
-            assert right_move
-"""
+        print("Tests Passed")
 
 class Player(arcade.Sprite):
     def __init__(self, filename="images/pacman.png", scale=0.09):
@@ -367,17 +375,19 @@ class Ghost(arcade.Sprite):
         self.preferred_direction = ["", ""]
         self.agressive_level = 6
 
-    def next_step(self, brick_list, player):
-        self.get_direction(player)
-
+    def setup_collision(self):
         self.up_collision.center_y = self.center_y + 2
         self.up_collision.center_x = self.center_x
+        self.down_collision.center_y = self.center_y - 2
+        self.down_collision.center_x = self.center_x
         self.left_collision.center_y = self.center_y
         self.left_collision.center_x = self.center_x - 2
         self.right_collision.center_y = self.center_y
         self.right_collision.center_x = self.center_x + 2
-        self.down_collision.center_y = self.center_y - 2
-        self.down_collision.center_x = self.center_x
+
+    def next_step(self, brick_list, player):
+        self.get_direction(player)
+        self.setup_collision()
 
         if self.direction != "":
             index = self.available_direction.index(self.direction)
@@ -394,7 +404,6 @@ class Ghost(arcade.Sprite):
 
             choose_direction = False
             while not choose_direction:
-
                 index = random.randint(0, 3)
                 if index == 0:
                     if go_preferred_direction:
@@ -429,6 +438,20 @@ class Ghost(arcade.Sprite):
                         self.flag = self.available_direction[index]
                         choose_direction = True
 
+        self.check_flags(brick_list)
+        self.move()
+
+        #restrict ghost from passageway
+        if self.center_x > 0 and self.center_x < 10:
+            if self.center_y < 335 and self.center_y > 325:
+                if self.direction == "L":
+                    self.direction = "R"
+        elif self.center_x < 580 and self.center_x > 570:
+            if self.center_y < 335 and self.center_y > 325:
+                if self.direction == "R":
+                    self.direction = "L"
+
+    def check_flags(self, brick_list):
         if self.flag == "U":
             if len(arcade.check_for_collision_with_list(self.up_collision, brick_list)) == 0:
                 self.direction = "U"
@@ -445,17 +468,6 @@ class Ghost(arcade.Sprite):
             if len(arcade.check_for_collision_with_list(self.right_collision, brick_list)) == 0:
                 self.direction = "R"
                 self.flag = ""
-
-        self.move()
-
-        if self.center_x > 0 and self.center_x < 10:
-            if self.center_y < 335 and self.center_y > 325:
-                if self.direction == "L":
-                    self.direction = "R"
-        elif self.center_x < 580 and self.center_x > 570:
-            if self.center_y < 335 and self.center_y > 325:
-                if self.direction == "R":
-                    self.direction = "L"
 
     def move(self):
         if self.direction == "U":

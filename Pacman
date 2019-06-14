@@ -5,9 +5,7 @@ import os
 WIDTH = 700
 HEIGHT = 620
 TITLE = "Pac-Man"
-MOVEMENT_SPEED = 1
-MAP_WIDTH = 28 * 20
-MAP_HEIGHT = 31 * 20 - 10
+MOVEMENT_SPEED = 2
 
 class Map(arcade.Window):
     map = [
@@ -56,13 +54,17 @@ class Map(arcade.Window):
         self.ghost = Ghost()
         self.end_game = False
         self.start_game = False
+        #self.MAP_WIDTH = 560
+        self.MAP_HEIGHT = 610
+        self.pause = False
 
         self.setup()
+        self.tests()
 
     def setup(self):
         arcade.start_render()
 
-        y = MAP_HEIGHT
+        y = self.MAP_HEIGHT
 
         for row in Map.map:
             x = 10
@@ -95,12 +97,11 @@ class Map(arcade.Window):
 
         if not self.start_game:
             arcade.draw_text(f"PAC-MAN", 260, 340, arcade.color.WHITE, 10, 100, font_name='GARA')
-            arcade.draw_text("PRESS 'ENTER' KEY TO START", 243, 320, arcade.color.WHITE, 10, 110, font_name='GARA')
+            arcade.draw_text("PRESS 'ENTER' TO START GAME", 243, 320, arcade.color.WHITE, 8, 110, font_name='GARA')
             arcade.draw_circle_filled(self.player.center_x, self.player.center_y, 8, arcade.color.YELLOW)
 
         if self.end_game:
-            arcade.draw_text(f"GAME OVER! SCORE: {self.player.score}", 250, 335, arcade.color.WHITE, 10, 100,
-                             font_name='GARA')
+            arcade.draw_text(f"GAME OVER! SCORE: {self.player.score}", 250, 335, arcade.color.WHITE, 10, 100, font_name='GARA')
 
         if self.start_game:
             if self.player.mouth_open:
@@ -108,11 +109,20 @@ class Map(arcade.Window):
             else:
                 arcade.draw_circle_filled(self.player.center_x, self.player.center_y, 8, arcade.color.YELLOW)
 
+        if self.pause:
+            self.player.change_y = 0
+            self.player.change_x = 0
+            self.ghost.change_y = 0
+            self.ghost.change_x = 0
+            arcade.draw_text("PAUSED", 265, 340, arcade.color.WHITE, 10, 100, font_name='GARA')
+            arcade.draw_text("PRESS 'P' TO CONTINUE", 227, 320, arcade.color.WHITE, 8, 150, font_name='GARA')
+
         self.ghost.draw()
 
         arcade.draw_text(f"SCORE: {self.player.score}", 585, 595, arcade.color.WHITE, 15, 1, font_name='GARA')
 
     def update(self, delta_time):
+        self.tests()
         if self.start_game:
             self.brick_list.update()
             self.food_list.update()
@@ -251,6 +261,16 @@ class Map(arcade.Window):
             elif key == arcade.key.RIGHT:
                 self.player.flag = "R"
 
+            if key == arcade.key.P and not self.pause:
+                self.pause = True
+            elif key == arcade.key.P and self.pause:
+                self.pause = False
+
+    def tests(self):
+        assert self.player.direction == "" or self.player.direction == "U" or self.player.direction == "R" or self.player.direction == "L" or self.player.direction == "D"
+        
+        print("tests passed")
+
 class Player(arcade.Sprite):
     def __init__(self, filename="images/pacman.png", scale=0.09):
         super().__init__(filename=filename, scale=scale)
@@ -299,7 +319,7 @@ class Ghost(arcade.Sprite):
 
     def next_step(self, brick_list, player):
         self.get_direction(player)
-        
+
         self.up_collision.center_y = self.center_y + 2
         self.up_collision.center_x = self.center_x
         self.left_collision.center_y = self.center_y
@@ -454,8 +474,6 @@ class Ghost(arcade.Sprite):
             self.agressive_level = 8
         else:
             self.agressive_level = 6
-
-        print(abs(player_distance_x), abs(player_distance_y), self.agressive_level)
 
 class MyGame():
     def __init__(self):

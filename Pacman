@@ -130,8 +130,9 @@ class Map(arcade.Window):
             arcade.draw_text("Press 'DOWN ARROW' to go DOWN", 60, 460, arcade.color.WHITE, 10, 300, font_name='GARA')
             arcade.draw_text("Press 'LEFT ARROW' to go LEFT", 60, 420, arcade.color.WHITE, 10, 300, font_name='GARA')
             arcade.draw_text("Press 'RIGHT ARROW' to go RIGHT", 60, 380, arcade.color.WHITE, 10, 300, font_name='GARA')
-            arcade.draw_text("You are pac-man (Yellow character)! Avoid the red ghost and eat all pellets to win the game!", 60, 340, arcade.color.WHITE, 15, 500, font_name='GARA')
-            arcade.draw_text("Press 'I' to return", 500, 540, arcade.color.WHITE, 10, 300, font_name='GARA')
+            arcade.draw_text("You are pac-man (yellow character). Avoid the red ghost and eat all white pellets to win the game! "
+                             "You may use the passageways on the sides of the map, but the ghost cannot!", 60, 320, arcade.color.WHITE, 15, 500, font_name='GARA')
+            arcade.draw_text("Press 'I' to return", 500, 540, arcade.color.WHITE, 12, 300, font_name='GARA')
 
         if not self.display_instructions:
             arcade.draw_text("PRESS 'I' TO DISPLAY INSTRUCTIONS", 585, 450, arcade.color.WHITE, 10, 100,

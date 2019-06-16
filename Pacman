@@ -1,3 +1,4 @@
+import sys
 import arcade
 import random
 import os
@@ -46,10 +47,6 @@ class Map(arcade.Window):
     def __init__(self, WIDTH, HEIGHT, TITLE):
         super().__init__(WIDTH, HEIGHT, TITLE)
 
-        file_path = os.path.dirname(os.path.abspath(__file__))
-        os.chdir(file_path)
-
-        # self.MAP_WIDTH = 560
         self.MAP_HEIGHT = 610
 
         self.brick_list = arcade.SpriteList()
@@ -250,9 +247,11 @@ class Map(arcade.Window):
 
             if key == arcade.key.P and not self.pause:
                 self.pause = True
+                self.player.pause = True
 
             elif key == arcade.key.P and self.pause:
                 self.pause = False
+                self.player.pause = False
 
         if key == arcade.key.I and not self.display_instructions:
             self.display_instructions = True
@@ -297,11 +296,15 @@ class Player(arcade.Sprite):
         self.front_collision = arcade.Sprite(filename="images/pacman.png", scale=0.09)
         self.direction = ""
         self.flag = ""  # flagged direction
+        self.pause = False
         self.score = 0
         self.mouth_open = False
         arcade.schedule(self.eat, 0.2)
 
     def eat(self, delta_time):
+        if self.pause:
+            return
+
         if self.change_x == 0 and self.change_y == 0:
             self.mouth_open = False
         else:
@@ -597,8 +600,15 @@ class MyGame():
 
 
 def main():
-    MyGame()
-    arcade.run()
+
+    try:
+        file_path = os.path.dirname(os.path.abspath(__file__))
+        os.chdir(file_path)
+        MyGame()
+        arcade.run()
+    except:
+        print("Something went wrong!", sys.exc_info()[0],
+              " occured. Please restart the game.")
 
 if __name__ == '__main__':
     main()
